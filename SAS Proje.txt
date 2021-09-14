@@ -1,0 +1,199 @@
+/* Projemizin kalıcı olması için bir kütüphane oluşturma */
+libname SAS '/home/u49981833/My SAS Files';
+
+/* Örnek Proje dosyamızı SAS'a alma(import etme)işlemi */
+
+FILENAME REFFILE '/home/u49981833/My SAS Files/Ornek_Proje.xlsx';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=XLSX
+	OUT=SAS.NOTLAR replace;
+	GETNAMES=YES;
+RUN;
+
+PROC CONTENTS DATA = SAS.NOTLAR; RUN;
+
+/* Hangi derslerin olduğunu sorgulama */
+
+proc sql;
+create table work.dersler as
+select distinct Ders from SAS.Notlar;
+quit;
+
+/* Ders kategorisinde bozuk veri olduğunu gördük ve s adında bir derse 
+inceleme yapmak için tablo filtreleme özelliğini kullanacağız. */
+
+data Bozuk_Dersler ;
+set SAS.notlar(WHERE = (Ders = "s"));
+run;
+
+/* Yukarıdaki sorgumuz sonucu veri setimiz içerisinde 1 ders s olarak görünmekte ve şimdi ders s ise
+bunu kaldırmasını yerine hiçbir şey yazmaması işlemini yapacağız.*/
+
+data SAS.Notlar2;
+set SAS.Notlar;
+if Ders = "s" then Ders = "";
+run;
+
+/* Kontrol etmek için sorgulama ve artık ana tablomuz Notlar2 oldu. */
+proc sql;
+create table work.dersler as
+select distinct Ders from sas.Notlar2;
+quit;
+
+
+/* Tabloda inceleme yaptığımızda Puan bilgisinin olduğu kolonu Karakter olarak görünmektedir.
+Olması gereken ise Nümerik'tir. Bu yüzden dolayı Karakter-Nümerik çevirimi yapacağız. 
+Dönüşüm olacağından dolayı bir kere daha yeni bir tablo oluşturacağız. Bu tabloda iki kolonun da 
+aynı anda bulunmaması için karakter olan Ders kolonunu drop edeceğiz.*/
+
+data SAS.Notlar3(drop=Puan);
+set sas.Notlar2;
+Puan_Numerik = input(Puan, 8.);
+rename Puan_Numerik = Puan;
+run;
+
+
+/* Ayrı kolonlar halinde bulunan Ad ve Soyad bilgilerini tek bir kolon halinde birleştirme */
+/* Ad_Soyad kolonuna maksimum karakter uzunluğu verme */
+/* retain fonksiyonu ile istenilen kolon sıralamasına göre çıktı alabiliriz. Kolonlar arası 
+boşluk bırakarak istenilen sıralamada kolonları gösterebiliriz. */
+/* Ayrı kolonlarda buluna Ad ve Soyad bilgisini drop etme */
+
+data sas.Notlar4(drop=Ad Soyad);
+retain Ogrenci_No Ad_Soyad;
+set sas.notlar3;
+
+length Ad_Soyad $50;
+Ad_Soyad=catx(' ',Ad,Soyad);
+run;
+
+/* Listede kaç tane öğrenci olduğunu saydırma işlemi */
+
+proc sql;
+create table ogrenci_sayisi as 
+select count(distinct (ogrenci_no)) as Ogrenci_Sayisi
+from sas.Notlar4;
+quit;
+
+/* Maksimum ve Minimum Puan Analizi */
+
+proc sql;
+create table Min_Max as 
+select min(Puan_Numerik) as Minimum_Puan, max(Puan_Numerik) as Maksimum_Puan
+from sas.Notlar4;
+quit;
+
+/* Yukarıdaki analiz sonucu minumum ve maksimum puan değerleri 0-100 arasında olmadığı görülmektedir.
+Şimdi puan aralığı 0-100 arasında olmayanları boş olarak atayacağız.  */
+
+/* SAS'ta nümerik kolonların bol olması demek nokta anlamına gelmektedir.*/
+
+data sas.Notlar5;
+set sas.Notlar4;
+if Puan_Numerik < 0 or Puan_Numerik > 100 then Puan_Numerik = .;
+rename Puan_Numerik = Puan;
+run;
+
+/* İşlemin kontrolü için tekrardan min ve max değerlerine bakıyoruz. */
+proc sql;
+create table Min_Max as 
+select min(Puan_Numerik) as Minimum_Puan, max(Puan_Numerik) as Maksimum_Puan
+from sas.Notlar5;
+quit;
+
+/***********************************************************/
+
+/* Excel'de bulunan 2.sayfamız olan Bilgiler kolonunu içeri alma */
+
+FILENAME REFFILE '/home/u49981833/My SAS Files/Ornek_Proje.xlsx';
+
+PROC IMPORT DATAFILE=REFFILE
+	DBMS=XLSX
+	OUT=SAS.Bilgiler replace;
+	GETNAMES=YES;
+	sheet='Bilgiler';
+RUN;
+
+/* Öğrenci Sayrdırma */
+
+proc sql;
+create table Ogrenci_Sayisi as 
+select count(distinct(Ogrenci_No)) as Ogrenci_Sayisi
+from sas.Bilgiler;
+quit;
+
+/* Fakülte ve Bölüm kolonunu ayrı olarak iki farklı kolon haline dönüştürme */
+/* Dönüstürme isleminden sonra Fakulte_ve_bolum drop etme */
+
+data SAS.Bilgiler2(drop=Fakulte_ve_Bolum yer);
+set sas.Bilgiler;
+
+length Fakulte $30;
+length Bolum $30;
+yer = find(Fakulte_ve_Bolum,'/');
+
+Fakulte = substr(Fakulte_ve_bolum,1,yer-1);
+Bolum = substr(Fakulte_ve_Bolum,yer+1);
+run;
+
+
+/* Analiz sırasında görüldüğü üzere Dogum_Tarihi alanı karakter olarak gelmiştir.Bu alanın tarih
+alanında olması gerekmektedir.SAS tarih alanlarını nümerik olarak tutmaktadır.Önce karakter olan 
+bu alanı nümeriğe daha sonra da tarih formatına çevireceğiz.*/
+
+/* Doğum tarihi alanını tarihe çevirme ve yaş hesaplama */
+
+data SAS.Bilgiler3(drop=Dogum_Tarihi);
+set SAS.Bilgiler2;
+
+dogum_tarihi_numerik = input(dogum_tarihi,anydtdte20.);
+/*format dogum_tarihi_numerik date9.; */
+format dogum_tarihi_numerik ddmmyyp10.;
+
+Yas = intck('year',dogum_tarihi_numerik,'14OCT2021'd);
+
+drop dogum_tarihi_numerik;
+
+run;
+
+
+/* Notlar tablosunda 100, Bilgiler tablosunda ise toplam öğrenci sayısı 105 olarak görülmüştür.
+Bu iki tablodaki ortak olan öğrencileri birleştirmek için Inner Join kullanacağız. */
+
+proc sql;
+create table SAS.Ogrenciler as
+select * from sas.notlar5 t1 inner join sas.bilgiler3 t2 
+on t1.ogrenci_no = t2.ogrenci_no;
+quit;
+
+
+/* Her bir öğrencinin ortalama puan tablosu ve sıralaması */
+
+proc sql;
+create table sas.ogrenci_notlar_final as
+select distinct Ogrenci_No,
+round(avg(Puan)) as Ortalama_Puan,
+Ad_Soyad,
+Cinsiyet,
+Fakulte,
+Bolum
+from sas.Ogrenciler
+group by Ogrenci_No
+order by Fakulte;
+quit;
+
+
+/* Final tablosun Excel olarak export(dışarıya alma) işlemi */
+
+proc export data = sas.ogrenci_notlar_final dbms=xls
+outfile = '/home/u49981833/My SAS Files/ogrenciler_final_notlar.xlsx';
+
+run;
+
+
+-----------------------------------------------------------------------
+Task and Utilities -- > Statistics
+1.One-Way Frequencies
+2.Summary Statistic
+3.Graph --> Pie Chart

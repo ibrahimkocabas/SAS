@@ -1,0 +1,40 @@
+Task and Utilities 
+
+--- Data (Veri) ---
+
+. List Table Attributes: Tablo içerisinde olan bilgileri göstermektedir. (Özet bilgi)
+. Characterize Data : Veri içerisindeki kolonların içerikleri ile ilgili detaylı bilgi sağlamaktadır.
+. Describe Missing Data : Seçili değişkenler için eksik değerlerin sıklığını ve modelini hesaplamaya yaramaktadır.
+. List Data : Bir veya daha fazla seçilen tablonun içeriğini bir rapor olarak görüntüler.
+. Transpose Data : Bir girdi tablosunun seçili sütunlarını bir çıktı tablosunun satırlarına aktarır.
+. Filter Data : Veri seti içerisindeki istenilen bir kolon üzerinde belirtilen şartlara göre filtreleme yapmak için kullanılır.
+. Sort Data : Bir tablonun sütunlarından herhangi birine göre sıralanmasını sağlar.
+. Transform Data : Mevcut değişkenlerin dönüşümleri olan yeni değişkenler yaratır.(karesi, karekökü, log vb.)
+. Standardize Data: Çeşitli yöntemler kullanarak bir veya daha fazla sayısal değişkeni standartlaştırır.
+. Recode Values : Karakter ve sayısal değişkenlerin değerlerini değiştirmenizi sağlar.
+. Recode Ranges : Bir sayısal değer aralığı belirlemenizi ve aralıktaki tüm değerleri başka bir değerle değiştirmenizi sağlar.
+. Combine Tables : İki veri tablosunu çeşitli şekillerde birleştirir.
+
+
+--- Graph (Grafik) ---
+
+Graph paneli çeşitli grafikler oluşturmayı sağlamaktadır.Kullanılmak istenilen grafik türü seçilerek ve veri girişi
+yapılarak görsel elde edilir.
+DATA kısmından kullanılacak veriseti ve hangi kolon ile ilgili işlem yapılacağı,
+APPEARANCE kısmında ise ilave görünüm ayarlarını yapabiliriz.
+
+
+--- Statistic (İstatistik) ---
+
+İstatistik ile ilgili olan bir çok test bu kısım altında bulunmaktadır.
+
+. Data Exploration : Veri keşfi, seçilen değişkenler arasındaki ilişkileri keşfetmek için kullanılabilecek grafikler sağlar.
+. Summary Statistic : Özey istatistik, tüm gözlemlerdeki ve gözlem grupları içindeki değişkenler için tanımlayıcı istatistikler sağlar.(Ortalama, minumum, maksimum, standart sapma vb.)
+                      Ayrıca histogramlar ve kutu grafikleri oluşturur. 
+
+. Distribution Analysis : Dağılım analizi, sayısal değişkenlerin dağılımı hakkında bilgi sağlar.
+                          Bu analizde histogramlar, olasılık grafikleri ve nicel-kantil grafikler gibi çeşitli grafikler 
+                          kullanılabilir.
+
+. One-Way Frequencies: Tek Yönlü Frekanslar, verilerinizden sıklık tabloları ve grafikler oluşturur.
+                       Asimptotik ve kesin binom ve ki-kare testleri yapmak için de kullanabilirsiniz.
